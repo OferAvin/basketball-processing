@@ -27,6 +27,7 @@ labels_all(labels_all==2) = [];
 %extracting subsess from all sets of eeg_array
 subsess_all = cellfun(@(x) repmat([x.subject x.session],x.trials,1), eeg_array,'UniformOutput',false);
 subsess_all = cat(1,subsess_all{1:end});
+
 %calculate tf
 [tf,freqs,time] = calcTF(minFreq,maxFreq,nFreqs,blFlag,baselineTRange,cutRange,method);
 
