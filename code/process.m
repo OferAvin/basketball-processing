@@ -11,6 +11,8 @@ cutRange = [-2100 0];
 baselineTRange = [-2100 -1650];
 blFlag = 1;     %1-calculate tf with baceline, 0-without bacceline 
 method = 'log'; %choose between log, log_abs, abs, power
+
+plotFlag = 0;   %1-plot, 0-do not plot
 pVal = 0.02;
 
 tf_all = cell(length(chansLables),1);     %prealocate tf_all
@@ -32,8 +34,9 @@ subsess_all = cat(1,subsess_all{1:end});
 [tf,freqs,time] = calcTF(minFreq,maxFreq,nFreqs,blFlag,baselineTRange,cutRange,method);
 
 %plot diff and pval for each channel
- cellfun(@(x,y)  plotDiffandPval(x,y,time,freqs,labels_all,pVal),tf,chansLables);
-
+if plotFlag == 1
+    cellfun(@(x,y)  plotDiffandPval(x,y,time,freqs,labels_all,pVal),tf,chansLables);
+end
 
 
 
