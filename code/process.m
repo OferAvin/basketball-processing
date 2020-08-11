@@ -15,6 +15,8 @@ method = 'log'; %choose between log, log_abs, abs, power
 plotFlag = 0;   %1-plot, 0-do not plot
 pVal = 0.02;
 
+nFeatSelect = 20;
+
 tf_all = cell(length(chansLables),1);     %prealocate tf_all
 
 %extracting constants from eeg_array
@@ -44,3 +46,7 @@ end
 
 logBandPrmtr = getLogBandPrmtr();
 featMat = extBandPower(tf,logBandPrmtr,chansLables,freqs,time);
+
+
+%% features selection
+[featIdx,selectMat,featOrder] = selectFeat(featMat,nFeatSelect,labels_all);
