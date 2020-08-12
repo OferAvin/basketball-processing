@@ -17,7 +17,6 @@ pVal = 0.02;
 
 nFeatSelect = 20;
 
-tf_all = cell(length(chansLables),1);     %prealocate tf_all
 
 %extracting constants from eeg_array
 sRate = eeg_array{1}.srate;             
@@ -33,11 +32,11 @@ subsess_all = cellfun(@(x) repmat([x.subject x.session],x.trials,1), eeg_array,'
 subsess_all = cat(1,subsess_all{1:end});
 
 %calculate tf
-[tf,freqs,time] = calcTF(minFreq,maxFreq,nFreqs,blFlag,baselineTRange,cutRange,method);
+[tf_all,frex,wvlt_times] = calcTF(minFreq,maxFreq,nFreqs,blFlag,baselineTRange,cutRange,method);
 
 %plot diff and pval for each channel
 if plotFlag == 1
-    cellfun(@(x,y)  plotDiffandPval(x,y,time,freqs,labels_all,pVal),tf,chansLables);
+    cellfun(@(x,y)  plotDiffandPval(x,y,wvlt_times,frex,labels_all,pVal),tf_all,chansLables);
 end
 
 
@@ -45,7 +44,7 @@ end
 %% get bandpower features
 
 logBandPrmtr = getLogBandPrmtr();
-featMat = extBandPower(tf,logBandPrmtr,chansLables,freqs,time);
+featMat = extBandPower(tf_all,logBandPrmtr,chansLables,frex,wvlt_times);
 
 
 %% features selection
