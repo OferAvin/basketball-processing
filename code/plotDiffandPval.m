@@ -9,10 +9,10 @@ function plotDiffandPval(tf,chan,wvlt_times,frex,labels_all,pVal)
      suptitle(chan); %   sgtitle(chan);
     subplot(2,1,1);
     imagesc(wvlt_times,frex,nanmean(good,3)-nanmean(bad,3));
-%     set(gca, 'CLimMode', 'auto')
+     set(gca, 'CLimMode', 'auto')
     title ('                                                                mean diff (g-b) ALL');
     colorbar();
-    caxis([-2 2])
+   % caxis([-2 2])
     colormap(jet);
     axis xy;
 
