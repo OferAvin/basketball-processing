@@ -17,7 +17,9 @@ baselineERDS=[-2100 -1700];
 plotFlagERDS = 0;
 %% general parameters
 pVal = 0.02;
+%% features parameters
 nFeatSelect = 20;
+featsToRM = ["A1","A2"];
 
 %extracting constants from eeg_array
 sRate = eeg_array{1}.srate;             
@@ -40,26 +42,21 @@ if plotFlagTF == 1
     cellfun(@(x,y)  plotDiffandPval(x,y,wvlt_times,frex,labels_all,pVal),tf_all,chansLables);
 end
 
-
-
 %% get bandpower features
 
 logBandPrmtr = getLogBandPrmtr();
-bandPowFeatures = extBandPower(tf_all,logBandPrmtr,chansLables,frex,wvlt_times);
-
+[bandPowFeatures,bpFeatNames] = extBandPowerFeat(tf_all,logBandPrmtr,chansLables,frex,wvlt_times);
 
 %% get ERD\ERS features
  [ERDSFeatures,ERDSFeatureNames] = cellfun(@(x,y) computeERD_ERS(x,y,wvlt_times,frex,...
      labels_all,pVal,baselineERDS,plotFlagERDS),tf_all,chansLables,'UniformOutput',false);
- ERDSFeatures(ismember(chansLables, 'A1'))= []; %can be run only one time. remove A1 features
- ERDSFeatureNames(ismember(chansLables, 'A1'))= []; %can be run only one time. remove A1 features
- ERDSFeatures(ismember(chansLables, 'A2'))= []; %can be run only one time. remove A2 features
- ERDSFeatureNames(ismember(chansLables, 'A2'))= []; %can be run only one time. remove A2 features
  ERDSFeatures= cat(2,ERDSFeatures{:});
  ERDSFeatureNames= cat(2,ERDSFeatureNames{:});
  
- 
-%% features selection
+%% 
 featMat= cat(2,bandPowFeatures,ERDSFeatures); %concat between different types of features
+featNames = [bpFeatNames,ERDSFeatureNames];
+[featMat,featNames] = rmByFeatName(featsToRM,featMat,featNames);
 
+%% features selection
 [featIdx,selectMat,featOrder] = selectFeat(featMat,nFeatSelect,labels_all);
