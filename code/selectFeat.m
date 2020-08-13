@@ -1,4 +1,4 @@
-function [featIdx,selectMat,featOrder] = selectFeat(featMat,nFeatSelect,labels)
+function [selectMat,featIdx,featOrder] = selectFeat(featMat,nFeatSelect,labels)
 % this function extract the n best fearures 
 % Features - struct that containing all features data lables and parameters
 % nFeat2Reduce = the num of feature to slect
