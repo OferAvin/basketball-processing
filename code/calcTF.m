@@ -7,7 +7,7 @@ function [tf_all,freqs,time] = calcTF(minFreq,maxFreq,nFreqs,blFlag,baselineTRan
 
     %loops through all channels and calculate wavlet_tf
     for ichan = 1:length(chansLables)
-        chan = chansLables(ichan);
+        chan = chansLables{ichan};
         [tf,freqs,wvlt_times,~,~] = cellfun(@(x) wavelet_tf(x, chan, minFreq, maxFreq, nFreqs,...
             [5 15],blFlag,baselineTRange,1,cutRange,method, 0), eeg_array,'UniformOutput',false);
         tf_all{ichan} = cat(3,tf{1:end});   %each cell is different chan containing tf mat of all trials  
