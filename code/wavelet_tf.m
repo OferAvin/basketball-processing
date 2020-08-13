@@ -16,9 +16,9 @@ function [tf, frex,wvlt_times, tf_avg, baseline] = wavelet_tf (EEG, chan, min_fr
 %do be continue- fase extraction
 
 % frequency parameters
-%min_freq =  2;
-%max_freq = 30;
-%num_frex = 40;
+% min_freq =  2;
+% max_freq = 30;
+% num_frex = 40;
 frex = linspace(min_freq,max_freq,num_frex);
 
 % which channel to plot
@@ -73,6 +73,10 @@ switch transformation %to do log or not
     case {'log', 'log_abs'}
     tf= 10*log10(tf); %%%%  transforming to decibel
 end
+if sum(sum(sum(tf)))==0 % if channel doex not exsist put nan
+    tf(:,:,:)= nan;
+end
+
 %% baseline removal
 baseline=[];
 if bl_flag==1
