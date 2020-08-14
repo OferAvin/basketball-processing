@@ -8,6 +8,6 @@ function [featMat,featNames] = extBandPowerFeat(tf,bandRange, chansLables, freqs
     avgPowCell = cellfun(@(x,y,z) mean(mean(tf{x}(y,z,:))),ch,b,t,'UniformOutput',false);
     featMat = (cellfun(@(x) squeeze(x),avgPowCell,'UniformOutput',false));
     featMat = [featMat{:}];
-    featNames = cellfun(@(x) char(x{1}+" "+x{3}(1)+":"+x{3}(2)+"Hz "+x{2}(1)+":"+x{2}(2)+"ms"),...
-        bandRange,"UniformOutput",false);
+    featNames = cellfun(@(x) {[num2str(x{1}) ' ' num2str(x{3}(1)) ':' num2str(x{3}(2)) 'Hz ' num2str(x{2}(1))...
+        ':' num2str(x{2}(2)) 'ms']},bandRange,'UniformOutput',false);
 end

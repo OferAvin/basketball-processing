@@ -49,7 +49,7 @@ c=1;
 for iband=1: size(StartEndIdx,2)
     for ifeat=1: size(StartEndIdx{iband},1)
        features(:,c)= mean(ERDS(iband,StartEndIdx{iband}(ifeat,1):StartEndIdx{iband}(ifeat,2),:),2); %maybe median?
-       featureNames(c)= {[chan '_' bandNames{iband} '_'...
+       featureNames{c}= {[chan '_' bandNames{iband} '_'...
            num2str(wvlt_times(StartEndIdx{iband}(ifeat,1))) ':' num2str(wvlt_times(StartEndIdx{iband}(ifeat,2)))]};
        c= c+1;
     end

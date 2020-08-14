@@ -32,6 +32,6 @@ function Results = crossValidation(k,featMat,lables)
     trAccAvg = mean(trainAcc);
     trAccSD = std(trainAcc);
     
-    Results = struct("nFolds",k,"acc",accAvg,"SD",accSD,"trainAcc",trAccAvg,"trainSD",trAccSD,...
-        "f1",f1,"percision",percision,"recall",recall,"conf_mat",cmT);
+    Results = struct('nFolds',k,'acc',accAvg,'SD',accSD,'trainAcc',trAccAvg,'trainSD',trAccSD,...
+        'f1',f1,'percision',percision,'recall',recall,'conf_mat',cmT);
 end

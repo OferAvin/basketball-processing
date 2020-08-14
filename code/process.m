@@ -9,17 +9,17 @@ maxFreq = 40;
 nFreqs = 70;
 cutRange = [-2100 0];
 baselineTRangeTF = [-2100 -1650];
-blFlag = 1;     %1-calculate tf with baceline, 0-without bacceline 
-method = 'log'; %choose between log, log_abs, abs, power
+blFlag = 0;     %1-calculate tf with baceline, 0-without bacceline 
+method = 'abs'; %choose between log, log_abs, abs, power
 plotFlagTF = 0;   %1-plot, 0-do not plot
 %% parameters of ERD\ERS features
 baselineERDS=[-2100 -1700];
-plotFlagERDS = 1;
+plotFlagERDS = 0;
 %% general parameters
 pVal = 0.02;
 %% features parameters
 nFeatSelect = 20;
-featsToRM = ["A1","A2","Pz"];
+featsToRM = {'A1','A2','Pz'};
 
 k = 10; %for cross validation
 
@@ -63,7 +63,7 @@ featNames = [bpFeatNames,ERDSFeatureNames];
 %% features selection
 [balancedMat,lables] = arangeLables(labels_all,featMat,3,1);
 
-[selectMat,featIdx,featOrder] = selectFeat(balancedMat,21,lables);
+[selectMat,featIdx,featOrder] = selectFeat(balancedMat,31,lables);
 
 Results = crossValidation(k,selectMat,lables);
 
