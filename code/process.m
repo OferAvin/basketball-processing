@@ -18,9 +18,10 @@ plotFlagERDS = 0;
 %% general parameters
 pVal = 0.02;
 %% features parameters
-nFeatSelect = 20;
+nFeatSelect = 21;
 featsToRM = {'A1','A2','Pz'};
 
+balanceTrainSet = 1;
 k = 10; %for cross validation
 
 %extracting constants from eeg_array
@@ -61,9 +62,9 @@ featNames = [bpFeatNames,ERDSFeatureNames];
 [featMat,featNames] = rmByFeatName(featsToRM,featMat,featNames);
 
 %% features selection
-[balancedMat,lables] = arangeLables(labels_all,featMat,3,1);
+[balancedMat,lables] = arangeLables(labels_all,featMat,3,balanceTrainSet);
 
-[selectMat,featIdx,featOrder] = selectFeat(balancedMat,31,lables);
+[selectMat,featIdx,featOrder] = selectFeat(balancedMat,nFeatSelect,lables);
 
 Results = crossValidation(k,selectMat,lables);
 
