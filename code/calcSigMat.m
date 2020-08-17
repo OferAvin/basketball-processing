@@ -1,6 +1,6 @@
 function sigMat = calcSigMat(tf,labels,classes,pVal)
 %this function gets a tf matrix and calculate significance between two
-%conditions 8 and 9
+%conditions 
     good = tf(:,:,labels==classes(1));
     bad = tf(:,:,labels==classes(2));
 
