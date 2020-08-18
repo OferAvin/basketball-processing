@@ -1,4 +1,4 @@
-function plotDiffandPval(tf,chan,wvlt_times,frex,labels_all,pVal,classes)
+function plotDiffandPval(tf,chan,sigMat,wvlt_times,frex,labels_all,pVal,classes)
     good = tf(:,:,labels_all==classes(1));
     bad = tf(:,:,labels_all==classes(2));
        
@@ -14,7 +14,6 @@ function plotDiffandPval(tf,chan,wvlt_times,frex,labels_all,pVal,classes)
     axis xy;
 
     %plot significance
-    sigMat = calcSigMat(tf);
     subplot(2,1,2);
     imagesc(wvlt_times,frex,sigMat);
     set(gca, 'CLimMode', 'auto')
