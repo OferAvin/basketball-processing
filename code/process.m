@@ -13,8 +13,8 @@ blFlag = 1;         %1-calculate tf with baceline, 0-without bacceline
 method = 'log';     %choose between log, log_abs, abs, power
 plotFlagTF = 0;     %1-plot, 0-do not plot
 %% parameters of bandpower
-validSize= 250;
-minsize= 150;
+validSize= 200;
+minsize= 100;
 minIntensity= 0.99;
 %% parameters of ERD\ERS features
 baselineERDS=[-2100 -1700];
