@@ -5,7 +5,8 @@ function [tf, frex,wvlt_times, tf_avg, baseline] = wavelet_tf (EEG, chan, min_fr
 % mike x cohen ("convolution_with_many_trials_5.m", in the m&m drive)
 % with my own adjusments.
 % input: EEG, chan, min_freq, max_freq, num_frex, range_cycles,
-% bl_flag,bl_limits,cut_edge_flag,cut_edge_limits,transformation('log','abs','log_abs', 'power'), plot(1/0) 
+% bl_flag,bl_limits,cut_edge_flag,cut_edge_limits,...
+% transformation('log','abs','log_abs', 'power','relpow','log_relpow,'relabs','log_relabs'), plot(1/0) 
 % output:
 % tf:power matrix. 1dim is frex, 2dim is time, 3dim is trials, index is power.
 % frex : the vector of frequencies
@@ -25,7 +26,7 @@ frex = linspace(min_freq,max_freq,num_frex);
 channel2use = chan;
 
 % other wavelet parameters
-%range_cycles = [ 4 10 ];
+% range_cycles = [ 4 10 ];
 
 s = logspace(log10(range_cycles(1)),log10(range_cycles(end)),num_frex) ./ (2*pi*frex);
 wavtime = -2:1/EEG.srate:2;
@@ -62,19 +63,28 @@ for fi=1:length(frex)
     % and reshape back to time X trials
     as = reshape( as, EEG.pnts, EEG.trials );
     switch transformation %compute power either log, log_abs, abs amplitude, or power
-        case {'abs' , 'log_abs'}
+        case {'abs' , 'log_abs', 'relabs','log_relabs'}
             tf(fi,:,:)= permute(abs(as),[3 1 2]); % abs!!!
-        case {'log', 'power'}
+        case {'log', 'power', 'relpow', 'log_relpow'}
             tf(fi,:,:)= permute(abs(as).^2 ,[3 1 2]); %.^2 %% power!!!
     end
 
 end
-switch transformation %to do log or not
-    case {'log', 'log_abs'}
-    tf= 10*log10(tf); %%%%  transforming to decibel
-end
+
 if sum(sum(sum(tf)))==0 % if channel doex not exsist put nan
     tf(:,:,:)= nan;
+end
+
+switch transformation % to do relative or not.
+    case {'relpow', 'log_relpow', 'relabs', 'log_relabs'}
+    for i=1:size(tf,2)
+    tf(:,i,:)= tf(:,i,:) ./ nansum(tf(:,i,:));
+    end
+end
+
+switch transformation %to do log or not, to do relative or not.
+    case {'log', 'log_abs','log_relpow', 'log_relabs'}
+    tf= 10*log10(tf); %%%%  transforming to decibel
 end
 
 %% baseline removal
