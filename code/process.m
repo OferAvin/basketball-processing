@@ -9,21 +9,21 @@ maxFreq = 40;
 nFreqs = 70;
 cutRange = [-2100 0];
 baselineTRangeTF = [-2100 -1650];
-blFlag = 1;         %1-calculate tf with baceline, 0-without bacceline 
-method = 'log';     %choose between log, log_abs, abs, power
-plotFlagTF = 0;     %1-plot, 0-do not plot
+blFlag = 0;         %1-calculate tf with baceline, 0-without bacceline 
+method = 'abs';     %choose between log, log_abs, abs, power
+plotFlagTF = 1;     %1-plot, 0-do not plot
 %% parameters of bandpower
-validSize= 200;
+validSize= 1900;
 minsize= 100;
-minIntensity= 0.99;
+minIntensity= 0.9935;
 %% parameters of ERD\ERS features
 baselineERDS=[-2100 -1700];
 plotFlagERDS = 0;
 %% general parameters
 classes2analyze = [8,9];
-pVal = 0.02;
+pVal = 0.025;
 %% features parameters
-nFeatSelect = 21;
+nFeatSelect = 36;
 featsToRM = {'A1','A2','Pz'};
 
 balanceTrainSet = 1;
@@ -45,18 +45,22 @@ subsess_all = cat(1,subsess_all{1:end});
 %% calculate tf
 [tf_all,frex,wvlt_times] = calcTF(minFreq,maxFreq,nFreqs,blFlag,baselineTRangeTF,cutRange,method);
 
-%%plot diff and pval for each channel
-if plotFlagTF == 1
-   cellfun(@(x,y) plotDiffandPval(x,y,wvlt_times,frex,labels_all,pVal,classes2analyze)...
-       ,tf_all,chansLables);
-end
-
-%% get bandpower features
+%% calculate sigMatCell and plot spectogram and pval matrix
 sigMatCell = cellfun(@(x) calcSigMat(x,labels_all,classes2analyze,pVal),...
     tf_all,'UniformOutput',false);
-spectFeatures = cellfun(@(x,y) calcSpecFeat(x,y,validSize,minsize,minIntensity),...
-    tf_all,sigMatCell,"UniformOutput",false);
+%%plot diff and pval for each channel
+if plotFlagTF == 1
+   cellfun(@(x,y,z) plotDiffandPval(x,y,z,wvlt_times,frex,labels_all,pVal,classes2analyze)...
+       ,tf_all,chansLables,sigMatCell);
+end
+
+%% get spectogram features
+
+[spectFeatures,spectFeaurestNames] = cellfun(@(x,y,z) calcSpecFeat(x,y,z,validSize,minsize,minIntensity,wvlt_times,frex),...
+    tf_all,sigMatCell,chansLables,'UniformOutput',false);
 spectFeatures = cat(2,spectFeatures{:});
+spectFeaurestNames = cat(2,spectFeaurestNames{:});
+
 %% get ERD\ERS features
  [ERDSFeatures,ERDSFeatureNames] = cellfun(@(x,y) computeERD_ERS(x,y,wvlt_times,frex,...
      labels_all,pVal,baselineERDS,plotFlagERDS),tf_all,chansLables,'UniformOutput',false);
@@ -65,7 +69,7 @@ spectFeatures = cat(2,spectFeatures{:});
  
 %% 
 featMat= cat(2,spectFeatures,ERDSFeatures); %concat between different types of features
-featNames = [bpFeatNames,ERDSFeatureNames];
+featNames = [spectFeaurestNames,ERDSFeatureNames];
 [featMat,featNames] = rmByFeatName(featsToRM,featMat,featNames);
 
 %% features selection
