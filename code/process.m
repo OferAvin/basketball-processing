@@ -1,6 +1,6 @@
 close all;
 clear all;
-tic;
+
 load('../data/eeg_array.mat')
 load('../data/chansLables.mat');
 %% parameters of wavelet TF
@@ -9,8 +9,8 @@ maxFreq = 40;
 nFreqs = 70;
 cutRange = [-2100 0];
 baselineTRangeTF = [-2100 -1650];
-method = 'abs';     %choose between log, log_abs, abs, power
-blFlag = 0;         %1-calculate tf with baceline, 0-without bacceline 
+method = {'abs', 'log'};     %choose between log, log_abs, abs, power
+blFlag = [0, 1];         %1-calculate tf with baceline, 0-without bacceline, should corispond to methods order 
 plotFlagTF = 1;     %1-plot, 0-do not plot
 %% parameters of bandpower
 validSize= 190;
@@ -43,7 +43,12 @@ subsess_all = cellfun(@(x) repmat([x.subject x.session],x.trials,1), eeg_array,'
 subsess_all = cat(1,subsess_all{1:end});
 
 %% calculate tf
-[tf_all,frex,wvlt_times] = calcTF(minFreq,maxFreq,nFreqs,blFlag,baselineTRangeTF,cutRange,method);
+for i = 1:length(method)
+    tfName = [method{i} '_' num2str(blFlag(i))];
+    [tf_all,frex,wvlt_times] = calcTF(minFreq,maxFreq,nFreqs,blFlag(i),baselineTRangeTF,cutRange,method{i});
+    tfStruct.(tfName) = tf_all;
+end
+
 
 %% calculate sigMatCell and plot spectogram and pval matrix
 sigMatCell = cellfun(@(x) calcSigMat(x,labels_all,classes2analyze,pVal),...
