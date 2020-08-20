@@ -1,5 +1,12 @@
-function [featMat,featNames] = calcSpecFeat(tf,sigMat,chan, validSize,minsize,minIntensity,wvlt_times,frex)
-    
+function [featIdx,featNames] = calcSpecFeat(tf,chan, validSize,minsize,minIntensity,wvlt_times,frex,labels,classes,pVal,plotFlag)
+% this function get a tf matrix, calculate pVal and deside which areas will
+% be features.
+% the func returns the featIdx: the erae that need to be extracted and
+% sumes into a feature, and returns the name of the corresponding feature.
+% the function can plot the spectogram and the pval matrix.
+
+
+    sigMat = calcSigMat(tf,labels,classes,pVal);
     regionStruct = regionprops(sigMat>0,sigMat,'Area','PixelIdxList','MeanIntensity','BoundingBox');
     Nregion= size(regionStruct,1);
     %% checking if region is valid to be a feature
@@ -13,20 +20,15 @@ function [featMat,featNames] = calcSpecFeat(tf,sigMat,chan, validSize,minsize,mi
         end     
     end
     validregion(validregion == 0) = [];
-    %% extracting feature from tf_all
-    featMat(1:size(tf,3),1:size(validregion,2))= nan;
 
-    for ifeat=1:size(validregion,2)
-        for itrial=1:size(tf,3)
-            current_tf= tf(:,:,itrial);
-            featMat(itrial,ifeat)= nanmean(nanmean...
-                (current_tf(regionStruct(validregion(ifeat)).PixelIdxList)));
-        end
-    end
-    
-    %% feat names
-    featNames={};
+    %% compute feature indexes and feat names
+    featNames=cell(size(validregion,2),1);
+    featIdx=cell(size(validregion,2),1);
+
         for ifeat=1:size(validregion,2)
+            % feature indexes
+            featIdx{ifeat} = regionStruct(validregion(ifeat)).PixelIdxList;
+            % names
             t_start= wvlt_times(ceil(regionStruct(validregion(ifeat)).BoundingBox(1)));
             t_end= wvlt_times(floor(regionStruct(validregion(ifeat)).BoundingBox(1)) + regionStruct(validregion(ifeat)).BoundingBox(3));
             frex_start= frex(ceil(regionStruct(validregion(ifeat)).BoundingBox (2)));
@@ -36,4 +38,9 @@ function [featMat,featNames] = calcSpecFeat(tf,sigMat,chan, validSize,minsize,mi
             num2str(round(frex_start)) ':' num2str(round(frex_end)) ' Hz']};
             
         end
+%% plot
+if plotFlag==1
+plotDiffandPval(tf,chan,sigMat,wvlt_times,frex,labels,pVal,classes)
+end
+
 end

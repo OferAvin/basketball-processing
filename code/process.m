@@ -11,7 +11,7 @@ cutRange = [-2100 0];
 baselineTRangeTF = [-2100 -1650];
 method = {'abs', 'log'};     %choose between log, log_abs, abs, power
 blFlag = [0, 1];         %1-calculate tf with baceline, 0-without bacceline, should corispond to methods order 
-plotFlagTF = 1;     %1-plot, 0-do not plot
+plotFlagTF = 0;     %1-plot, 0-do not plot
 %% parameters of bandpower
 validSize= 190;
 minsize= 100;
@@ -50,21 +50,16 @@ for i = 1:length(method)
 end
 
 
-%% calculate sigMatCell and plot spectogram and pval matrix
-sigMatCell = cellfun(@(x) calcSigMat(x,labels_all,classes2analyze,pVal),...
-    tf_all,'UniformOutput',false);
-%%plot diff and pval for each channel
-if plotFlagTF == 1
-   cellfun(@(x,y,z) plotDiffandPval(x,y,z,wvlt_times,frex,labels_all,pVal,classes2analyze)...
-       ,tf_all,chansLables,sigMatCell);
-end
-
 %% get spectogram features
 
-[spectFeatures,spectFeaurestNames] = cellfun(@(x,y,z) calcSpecFeat(x,y,z,validSize,minsize,minIntensity,wvlt_times,frex),...
-    tf_all,sigMatCell,chansLables,'UniformOutput',false);
-spectFeatures = cat(2,spectFeatures{:});
-spectFeaurestNames = cat(2,spectFeaurestNames{:});
+[spectFeaturesIdx,spectFeaurestNames] = cellfun(@(x,y,z) calcSpecFeat(x,y,...
+    validSize,minsize,minIntensity,wvlt_times,frex,labels_all,classes2analyze...
+    ,pVal,plotFlagTF),tf_all,chansLables,'UniformOutput',false);
+
+spectFeaurestNames = cat(1,spectFeaurestNames{:})';
+
+% extract the spect features (need for train and for valid sets)
+ %%TO DO %%%  [featMat] = extSpecFeat(tf,spectFeaturesIdx);
 
 %% get ERD\ERS features
  [ERDSFeatures,ERDSFeatureNames] = cellfun(@(x,y) computeERD_ERS(x,y,wvlt_times,frex,...
@@ -73,7 +68,7 @@ spectFeaurestNames = cat(2,spectFeaurestNames{:});
  ERDSFeatureNames= cat(2,ERDSFeatureNames{:});
  
 %% 
-featMat= cat(2,spectFeatures,ERDSFeatures); %concat between different types of features
+featMat= cat(2,spectFeaturesIdx,ERDSFeatures); %concat between different types of features
 featNames = [spectFeaurestNames,ERDSFeatureNames];
 [featMat,featNames] = rmByFeatName(featsToRM,featMat,featNames);
 
