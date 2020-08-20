@@ -9,11 +9,11 @@ maxFreq = 40;
 nFreqs = 70;
 cutRange = [-2100 0];
 baselineTRangeTF = [-2100 -1650];
-blFlag = 0;         %1-calculate tf with baceline, 0-without bacceline 
 method = 'abs';     %choose between log, log_abs, abs, power
+blFlag = 0;         %1-calculate tf with baceline, 0-without bacceline 
 plotFlagTF = 1;     %1-plot, 0-do not plot
 %% parameters of bandpower
-validSize= 1900;
+validSize= 190;
 minsize= 100;
 minIntensity= 0.9935;
 %% parameters of ERD\ERS features
@@ -73,7 +73,7 @@ featNames = [spectFeaurestNames,ERDSFeatureNames];
 [featMat,featNames] = rmByFeatName(featsToRM,featMat,featNames);
 
 %% features selection
-[balancedMat,lables] = arangeLables(labels_all,featMat,3,balanceTrainSet);
+[balancedMat,labs] = arangeLables(labels_all,featMat,3,balanceTrainSet);
 
 [selectMat,featIdx,featOrder] = selectFeat(balancedMat,nFeatSelect,lables);
 
