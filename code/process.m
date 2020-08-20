@@ -27,7 +27,7 @@ nFeatSelect = 36;
 featsToRM = {'A1','A2','Pz'};
 
 balanceTrainSet = 1;
-k = 10; %for cross validation
+nFold = 10; %for cross validation
 
 %extracting constants from eeg_array
 sRate = eeg_array{1}.srate;             
@@ -43,47 +43,65 @@ subsess_all = cellfun(@(x) repmat([x.subject x.session],x.trials,1), eeg_array,'
 subsess_all = cat(1,subsess_all{1:end});
 
 %% calculate tf
-tfStruct(1:length(method)) = struct('tf_all',[],'method',[],'blFlag',[]);
-for i = 1:length(method)
+ntf = length(method);
+tfStruct(1:ntf) = struct('tf_all',[],'method',[],'blFlag',[],'ERDS',[],'tfTrain',[],'tfVal',[]);
+for i = 1:ntf
     [tf_all,frex,wvlt_times] = calcTF(minFreq,maxFreq,nFreqs,blFlag(i),baselineTRangeTF,cutRange,method{i});
     tfStruct(i).tf_all = tf_all;
     tfStruct(i).method = method{i};
     tfStruct(i).blFlag = blFlag(i);
 end
 
-%% calculate sigMatCell and plot spectogram and pval matrix
-sigMatCell = cellfun(@(x) calcSigMat(x,labels_all,classes2analyze,pVal),...
-    tf_all,'UniformOutput',false);
-%%plot diff and pval for each channel
-if plotFlagTF == 1
-   cellfun(@(x,y,z) plotDiffandPval(x,y,z,wvlt_times,frex,labels_all,pVal,classes2analyze)...
-       ,tf_all,chansLables,sigMatCell);
+%% calculate ERD/ERS
+for i = 1:ntf
+    [erds,bandNames] = cellfun(@(x) computeERDS(x,wvlt_times,frex,baselineERDS),tfStruct(i).tf_all,'UniformOutput',false);
+    tfStruct(i).ERDS = erds;
 end
+bandNames = bandNames{1};
 
-%% get spectogram features
+%% k folds
+idxSegments = mod(randperm(nTrials),k)+1;   %randomly split trails in to k groups
+for k = 1:nFold
+    for i = 1:ntf
+        % each test on 1 group and train on the else
+        validSet = logical(idxSegments == k)';
+        trainSet = logical(idxSegments ~= k)';
+        tfStruct(i).tfVal = cellfun(@(x) x(validSet),tfStruct(i).tf_all,'UniformOutput',false);
+        tfStruct(i).tfTrain = cellfun(@(x) x(trainSet),tfStruct(i).tf_all,'UniformOutput',false);
 
-[spectFeatures,spectFeaurestNames] = cellfun(@(x,y,z) calcSpecFeat(x,y,z,validSize,minsize,minIntensity,wvlt_times,frex),...
-    tf_all,sigMatCell,chansLables,'UniformOutput',false);
-spectFeatures = cat(2,spectFeatures{:});
-spectFeaurestNames = cat(2,spectFeaurestNames{:});
+    %% calculate sigMatCell and plot spectogram and pval matrix
+    sigMatCell = cellfun(@(x) calcSigMat(x,labels_all,classes2analyze,pVal),...
+        tf_all,'UniformOutput',false);
+    %%plot diff and pval for each channel
+    if plotFlagTF == 1
+       cellfun(@(x,y,z) plotDiffandPval(x,y,z,wvlt_times,frex,labels_all,pVal,classes2analyze)...
+           ,tf_all,chansLables,sigMatCell);
+    end
 
-%% get ERD\ERS features
- [ERDSFeatures,ERDSFeatureNames] = cellfun(@(x,y) computeERD_ERS(x,y,wvlt_times,frex,...
-     labels_all,pVal,baselineERDS,plotFlagERDS),tf_all,chansLables,'UniformOutput',false);
- ERDSFeatures= cat(2,ERDSFeatures{:});
- ERDSFeatureNames= cat(2,ERDSFeatureNames{:});
- 
-%% 
-featMat= cat(2,spectFeatures,ERDSFeatures); %concat between different types of features
-featNames = [spectFeaurestNames,ERDSFeatureNames];
-[featMat,featNames] = rmByFeatName(featsToRM,featMat,featNames);
+    %% get spectogram features
 
-%% features selection
-[balancedMat,labs] = arangeLables(labels_all,featMat,3,balanceTrainSet);
+    [spectFeatures,spectFeaurestNames] = cellfun(@(x,y,z) calcSpecFeat(x,y,z,validSize,minsize,minIntensity,wvlt_times,frex),...
+        tf_all,sigMatCell,chansLables,'UniformOutput',false);
+    spectFeatures = cat(2,spectFeatures{:});
+    spectFeaurestNames = cat(2,spectFeaurestNames{:});
 
-[selectMat,featIdx,featOrder] = selectFeat(balancedMat,nFeatSelect,lables);
+    %% get ERD\ERS features
+     [ERDSFeatures,ERDSFeatureNames] = cellfun(@(x,y) computeERD_ERS(x,y,wvlt_times,frex,...
+         labels_all,pVal,baselineERDS,plotFlagERDS),tf_all,chansLables,'UniformOutput',false);
+     ERDSFeatures= cat(2,ERDSFeatures{:});
+     ERDSFeatureNames= cat(2,ERDSFeatureNames{:});
 
-Results = crossValidation(k,selectMat,lables);
+    %% 
+    featMat= cat(2,spectFeatures,ERDSFeatures); %concat between different types of features
+    featNames = [spectFeaurestNames,ERDSFeatureNames];
+    [featMat,featNames] = rmByFeatName(featsToRM,featMat,featNames);
+
+    %% features selection
+    [balancedMat,labels] = arangeLables(labels_all,featMat,3,balanceTrainSet);
+
+    [selectMat,featIdx,featOrder] = selectFeat(balancedMat,nFeatSelect,labels);
+
+    Results = crossValidation(k,selectMat,lables);
 
 
 
