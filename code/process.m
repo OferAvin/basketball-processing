@@ -43,12 +43,13 @@ subsess_all = cellfun(@(x) repmat([x.subject x.session],x.trials,1), eeg_array,'
 subsess_all = cat(1,subsess_all{1:end});
 
 %% calculate tf
+tfStruct(1:length(method)) = struct('tf_all',[],'method',[],'blFlag',[]);
 for i = 1:length(method)
-    tfName = [method{i} '_' num2str(blFlag(i))];
     [tf_all,frex,wvlt_times] = calcTF(minFreq,maxFreq,nFreqs,blFlag(i),baselineTRangeTF,cutRange,method{i});
-    tfStruct.(tfName) = tf_all;
+    tfStruct(i).tf_all = tf_all;
+    tfStruct(i).method = method{i};
+    tfStruct(i).blFlag = blFlag(i);
 end
-
 
 %% calculate sigMatCell and plot spectogram and pval matrix
 sigMatCell = cellfun(@(x) calcSigMat(x,labels_all,classes2analyze,pVal),...
