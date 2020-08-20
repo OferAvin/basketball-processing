@@ -27,7 +27,7 @@ nFeatSelect = 36;
 featsToRM = {'A1','A2','Pz'};
 
 balanceTrainSet = 1;
-k = 10; %for cross validation
+nFold = 10; %for cross validation
 
 %extracting constants from eeg_array
 sRate = eeg_array{1}.srate;             
@@ -43,12 +43,31 @@ subsess_all = cellfun(@(x) repmat([x.subject x.session],x.trials,1), eeg_array,'
 subsess_all = cat(1,subsess_all{1:end});
 
 %% calculate tf
-for i = 1:length(method)
-    tfName = [method{i} '_' num2str(blFlag(i))];
+ntf = length(method);
+tfStruct(1:ntf) = struct('tf_all',[],'method',[],'blFlag',[],'ERDS',[],'tfTrain',[],'tfVal',[]);
+for i = 1:ntf
     [tf_all,frex,wvlt_times] = calcTF(minFreq,maxFreq,nFreqs,blFlag(i),baselineTRangeTF,cutRange,method{i});
-    tfStruct.(tfName) = tf_all;
+    tfStruct(i).tf_all = tf_all;
+    tfStruct(i).method = method{i};
+    tfStruct(i).blFlag = blFlag(i);
 end
 
+%% calculate ERD/ERS
+for i = 1:ntf
+    [erds,bandNames] = cellfun(@(x) computeERDS(x,wvlt_times,frex,baselineERDS),tfStruct(i).tf_all,'UniformOutput',false);
+    tfStruct(i).ERDS = erds;
+end
+bandNames = bandNames{1};
+
+%% k folds
+idxSegments = mod(randperm(nTrials),k)+1;   %randomly split trails in to k groups
+for k = 1:nFold
+    for i = 1:ntf
+        % each test on 1 group and train on the else
+        validSet = logical(idxSegments == k)';
+        trainSet = logical(idxSegments ~= k)';
+        tfStruct(i).tfVal = cellfun(@(x) x(validSet),tfStruct(i).tf_all,'UniformOutput',false);
+        tfStruct(i).tfTrain = cellfun(@(x) x(trainSet),tfStruct(i).tf_all,'UniformOutput',false);
 
 %% get spectogram features
 
@@ -78,7 +97,3 @@ featNames = [spectFeaurestNames,ERDSFeatureNames];
 [selectMat,featIdx,featOrder] = selectFeat(balancedMat,nFeatSelect,lables);
 
 Results = crossValidation(k,selectMat,lables);
-
-
-
-
