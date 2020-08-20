@@ -9,7 +9,7 @@ maxFreq = 40;
 nFreqs = 70;
 cutRange = [-2100 0];
 baselineTRangeTF = [-2100 -1650];
-method = 'abs';     %choose between log, log_abs, abs, power
+method = 'abs';     %choose between 'log','abs','log_abs', 'power','relpow','log_relpow,'relabs','log_relabs'
 blFlag = 0;         %1-calculate tf with baceline, 0-without bacceline 
 plotFlagTF = 1;     %1-plot, 0-do not plot
 %% parameters of bandpower
