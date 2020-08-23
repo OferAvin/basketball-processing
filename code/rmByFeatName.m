@@ -1,4 +1,4 @@
-function [featMat,featNames] = rmByFeatName(names,featMat,featNames)
+function [TrainFeatMat,ValFeatMat,featNames] = rmByFeatName(names,TrainFeatMat,ValFeatMat,featNames)
     totRM = zeros(1,length(featNames));
     for name = names
         rmFeat = (cellfun(@(x) strfind(x,name),featNames,'UniformOutput',false));
@@ -8,6 +8,7 @@ function [featMat,featNames] = rmByFeatName(names,featMat,featNames)
         totRM = totRM + cell2mat(rmFeat);
     end
     totRM = logical(totRM);
-    featMat(:,totRM) = [];
+    TrainFeatMat(:,totRM) = [];
+    ValFeatMat(:,totRM) = [];
     featNames(totRM) = [];
 end

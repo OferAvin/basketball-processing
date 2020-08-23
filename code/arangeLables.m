@@ -2,10 +2,12 @@ function [allFeat,allLables] = arangeLables(lables,featMat,lable2rm,doBalance)
     rmIdx = lables == lable2rm;
     lables(rmIdx) = [];
     featMat(rmIdx,:) = [];
-    allFeat = [];
-    allLables = [];
+    allFeat = featMat;
+    allLables = lables;
     if doBalance
-        %balance
+       %balance
+         allFeat = [];
+         allLables = [];
         [app,elemnt] = countAppearances(lables);
         [minApp,minIdx] = min(app);
         minElemnt = elemnt(minIdx);
