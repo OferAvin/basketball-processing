@@ -7,14 +7,14 @@ load('../data/chansLables.mat');
 %% parameters of wavelet TF
 minFreq = 5;
 maxFreq = 40;
-nFreqs = 70;
+nFreqs = (maxFreq-minFreq)*2;
 cutRange = [-2100 0];
 baselineTRangeTF = [-2100 -1650];
 method = {'abs', 'log'};     %choose between log, log_abs, abs, power
 blFlag = [0, 1];         %1-calculate tf with baceline, 0-without bacceline, should corispond to methods order 
 plotFlagTF = 0;     %1-plot, 0-do not plot
 nTimePointsWvlt = abs(cutRange(1) - cutRange(2))/(1000/sRate)+1;    
-%% parameters of bandpower
+%% parameters of spectogram features
 validSize= 190;
 minsize= 100;
 minIntensity= 0.9935;
@@ -60,6 +60,7 @@ bandNames = bandNames{1};
 %% k folds 
 idxSegments = mod(randperm(nTrials),nFold)+1;   %randomly split trails in to k groups
 for k = 1:nFold
+    
 for itf = 1:ntf
         % each test on 1 group and train on the else
         validSet = logical(idxSegments == k)';
@@ -123,6 +124,8 @@ end
     
     Results = struct('nFolds',nFold,'acc',accAvg,'SD',accSD,'trainAcc',trAccAvg,'trainSD',trAccSD,...
         'f1',f1,'percision',percision,'recall',recall,'conf_mat',cmT);
-
-
+%%
+for i=1:nFold
+topFeatNames(1:size(featNames{i},2),i)= featNames{i}(featOrder{i})';
+end
 %Results = crossValidation(k,selectMatTrain,lables); %to be changed and build an bew function
