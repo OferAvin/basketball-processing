@@ -1,4 +1,4 @@
-function [featIdx,featNames] = calcSpecFeat(tf,chan, validSize,minsize,minIntensity,wvlt_times,frex,labels,classes,pVal,plotFlag)
+function [featIdx,featNames] = calcSpecFeat(tf,chan, validSize,minsize,minIntensity,wvlt_times,frex,labels,classes,pVal,method,bl,plotFlag)
 % this function get a tf matrix, calculate pVal and deside which areas will
 % be features.
 % the func returns the featIdx: the erae that need to be extracted and
@@ -24,7 +24,11 @@ function [featIdx,featNames] = calcSpecFeat(tf,chan, validSize,minsize,minIntens
     %% compute feature indexes and feat names
     featNames=cell(size(validregion,2),1);
     featIdx=cell(size(validregion,2),1);
-
+    if bl==1
+        blName= {'BL'};
+    else
+        blName= {};
+    end
         for ifeat=1:size(validregion,2)
             % feature indexes
             featIdx{ifeat} = regionStruct(validregion(ifeat)).PixelIdxList;
@@ -34,8 +38,8 @@ function [featIdx,featNames] = calcSpecFeat(tf,chan, validSize,minsize,minIntens
             frex_start= frex(ceil(regionStruct(validregion(ifeat)).BoundingBox (2)));
             frex_end= frex(floor(regionStruct(validregion(ifeat)).BoundingBox (2)) + regionStruct(validregion(ifeat)).BoundingBox(4));
         
-        featNames{ifeat}= {[chan ' ' num2str(t_start) ':' num2str(t_end) ' ms ' ...
-            num2str(round(frex_start)) ':' num2str(round(frex_end)) ' Hz']};
+        featNames{ifeat}= {['spct_' method '_' blName '_' chan '_' num2str(t_start) '_' num2str(t_end) ' ms_' ...
+            num2str(round(frex_start)) '_' num2str(round(frex_end)) '_Hz']};
             
         end
 %% plot

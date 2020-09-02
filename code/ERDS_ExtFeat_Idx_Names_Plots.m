@@ -1,4 +1,4 @@
-function[StartEndIdx,featureNames] = ERDS_ExtFeat_Idx_Names_Plots(ERDS,chan,wvlt_times,labels_all,pVal,bandNames,plotFlag)
+function[StartEndIdx,featureNames] = ERDS_ExtFeat_Idx_Names_Plots(ERDS,chan,wvlt_times,labels_all,pVal,bandNames,method,plotFlag)
 %this function takes ERDS of a specific channel, and returnes the start and
 %end Idx of the chosen features for each band. each cell in StartEndIdx is
 %corresponding to a band. the function also retutrns feature Names.
@@ -20,8 +20,8 @@ featureNames={};
 c=1;
 for iband=1: size(StartEndIdx,2)
     for ifeat=1: size(StartEndIdx{iband},1)
-       featureNames{c}= {[chan '_' bandNames{iband} '_'...
-           num2str(wvlt_times(StartEndIdx{iband}(ifeat,1))) ':' num2str(wvlt_times(StartEndIdx{iband}(ifeat,2)))]};
+       featureNames{c}= {['ERDS_' method '_' chan '_' bandNames{iband} '_'...
+           num2str(wvlt_times(StartEndIdx{iband}(ifeat,1))) '_' num2str(wvlt_times(StartEndIdx{iband}(ifeat,2)))]};
        c= c+1;
     end
 end

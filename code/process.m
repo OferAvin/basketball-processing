@@ -100,7 +100,7 @@ for itf = 1:ntf
 % get ERD\ERS features
  [tfStruct(itf).ERDSFeatMatTrain,tfStruct(itf).ERDSFeatMatVal,tfStruct(itf).ERDSFeatNames] =...
      getAutoERDSFeat(tfStruct(itf).ERDSTrain,tfStruct(itf).ERDSVal,...
-     chansLables,labels_all(trainSet),wvlt_times,bandNames,pVal,plotFlagERDS);
+     chansLables,labels_all(trainSet),wvlt_times,bandNames,pVal,method,plotFlagERDS);
  end
 %
 TrainFeatMat= cat(2,tfStruct(:).SpectFeatMatTrain,tfStruct(:).ERDSFeatMatTrain); %concat between different types of features TRAIN
