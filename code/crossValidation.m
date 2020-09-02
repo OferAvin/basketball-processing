@@ -1,4 +1,4 @@
-function Results = crossValidation(k,featMat,lables)
+function [Results,acc] = crossValidation(k,featMat,lables)
     
     nTrials = size(featMat,1);
     idxSegments = mod(randperm(nTrials),k)+1;   %randomly split trails in to k groups

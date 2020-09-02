@@ -3,7 +3,7 @@ function sigMat = calcSigMat(tf,labels,classes,pVal)
 %conditions 
     good = tf(:,:,labels==classes(1));
     bad = tf(:,:,labels==classes(2));
-
+   
     sigMat = nan(size(tf,1),size(tf,2));
     for i=1:size(tf,1)
         for j=1:size(tf,2)
