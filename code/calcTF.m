@@ -1,8 +1,8 @@
-function [tf_all,freqs,time] = calcTF(minFreq,maxFreq,nFreqs,blFlag,baselineTRange,cutRange,method)
+function [tf_all,freqs,time] = calcTF(eeg_array,chansLables,minFreq,maxFreq,nFreqs,blFlag,baselineTRange,cutRange,method)
 % this function calculate the time frequency matrix
 
-    load('../data/eeg_array.mat')
-    load('../data/chansLables.mat');
+    %load('../data/eeg_array.mat')
+    %load('../data/chansLables.mat');
     tf_all = cell(length(chansLables),1);     %prealocate tf_all
 
     %loops through all channels and calculate wavlet_tf
