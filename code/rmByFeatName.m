@@ -9,6 +9,8 @@ function [TrainFeatMat,ValFeatMat,featNames] = rmByFeatName(names,TrainFeatMat,V
     end
     totRM = logical(totRM);
     TrainFeatMat(:,totRM) = [];
-    ValFeatMat(:,totRM) = [];
     featNames(totRM) = [];
+    if ~isempty (ValFeatMat)
+            ValFeatMat(:,totRM) = [];
+    end
 end
