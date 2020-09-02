@@ -1,31 +1,32 @@
-close all;
-clear all;
+%close all;
+%clear all;
 %%
-load('../data/eeg_array.mat');
+%load('../data/eeg_array.mat');
 load('../data/chansLables.mat');
-[labels_all,subsess_all,nTrials,sRate] = get_eeg_array_constants (eeg_array); % get labels subess srate and total N trials
+[labels_all,metaData,nTrials,sRate] = get_eeg_array_constants (eeg_array); % get labels subess srate and total N trials
 %% parameters of wavelet TF
 minFreq = 5;
 maxFreq = 40;
-nFreqs = (maxFreq-minFreq)*2;
+nFreqs = (maxFreq-minFreq)*2; 
 cutRange = [-2100 0];
 baselineTRangeTF = [-2100 -1650];
 method = {'abs', 'log'};     %choose between log, log_abs, abs, power
 blFlag = [0, 1];         %1-calculate tf with baceline, 0-without bacceline, should corispond to methods order 
-plotFlagTF = 0;     %1-plot, 0-do not plot
-nTimePointsWvlt = abs(cutRange(1) - cutRange(2))/(1000/sRate)+1;    
+plotFlagTF = 1;     %1-plot, 0-do not plot
+nTimePointsWvlt = abs(cutRange(1) - cutRange(2))/(1000/sRate)+1;  
+ntf = length(method);
 %% parameters of spectogram features
-validSize= 190;
+validSize= 160;
 minsize= 100;
-minIntensity= 0.9935;
+minIntensity= 0.988;
 %% parameters of ERD\ERS features
 baselineERDS=[-2100 -1700];
-plotFlagERDS = 0;
+plotFlagERDS = 1;
 %% general parameters
 classes2analyze = [8,9];
-pVal = 0.025;
+pVal = 0.0285;
 %% features parameters
-nFeatSelect = 10;
+nFeatSelect = 62;
 featsToRM = {'A1','A2','Pz'};
 balanceTrainSet = 1;
 nFold = 8; %for cross validation
@@ -37,7 +38,6 @@ results = cell(nFold,1);
 trainErr = cell(nFold,1);
 acc = zeros(nFold,1);
 %% allocating tfStruct
-ntf = length(method);
 tfStruct(1:ntf) = struct('tf_all',[],'method',[],'blFlag',[],'ERDS',[],...
     'tfTrain',[],'tfVal',[],'ERDSVal',[],'ERDSTrain',[],'SpectFeatMatTrain',[],...
     'SpectFeatMatVal',[],'SpectFeaurestNames',[],'SpectFeaturesIdx',[],...
@@ -45,7 +45,7 @@ tfStruct(1:ntf) = struct('tf_all',[],'method',[],'blFlag',[],'ERDS',[],...
 %% calculate tf
 
 for itf = 1:ntf
-    [tf_all,frex,wvlt_times] = calcTF(minFreq,maxFreq,nFreqs,blFlag(itf),baselineTRangeTF,cutRange,method{itf});
+    [tf_all,frex,wvlt_times] = calcTF(eeg_array,chansLables,minFreq,maxFreq,nFreqs,blFlag(itf),baselineTRangeTF,cutRange,method{itf});
     tfStruct(itf).tf_all = tf_all;
     tfStruct(itf).method = method{itf};
     tfStruct(itf).blFlag = blFlag(itf);
@@ -57,8 +57,23 @@ for itf = 1:ntf
 end
 bandNames = bandNames{1};
 
+%% the new arrange tf
+for itf = 1:ntf
+tfStruct(itf).tf_all= cellfun(@(x) remove_trials_from_tf(x,metaData(:,4)==3) , tfStruct(itf).tf_all,'UniformOutput',false); %remove '3'
+tfStruct(itf).ERDS= cellfun(@(x) remove_trials_from_tf(x,metaData(:,4)==3) , tfStruct(itf).ERDS,'UniformOutput',false);
+end
+metaData(metaData(:,4)==3,:)=[]; % remove '3' from metaData
+
+rmIdx = balancePerSetTf (metaData); %logical '1' means that trial is designated for removal
+for itf = 1:ntf %balance
+tfStruct(itf).tf_all= cellfun(@(x) remove_trials_from_tf(x,rmIdx) , tfStruct(itf).tf_all,'UniformOutput',false); 
+tfStruct(itf).ERDS = cellfun(@(x) remove_trials_from_tf(x,rmIdx) , tfStruct(itf).ERDS,'UniformOutput',false);
+end
+metaData(rmIdx,:)=[]; % balance metaData
+
+
 %% k folds 
-idxSegments = mod(randperm(nTrials),nFold)+1;   %randomly split trails in to k groups
+idxSegments = mod(randperm(size(metaData,1)),nFold)+1;   %randomly split trails in to k groups
 for k = 1:nFold
     
 for itf = 1:ntf
@@ -95,8 +110,12 @@ featNames{k} = [tfStruct(:).SpectFeaurestNames,tfStruct(:).ERDSFeatNames];
 [TrainFeatMat,ValFeatMat,featNames{k}] = rmByFeatName(featsToRM,TrainFeatMat,ValFeatMat,featNames{k});
 
 % features selection
-[balancedMatTrain,labelsTrain] = arangeLables(labels_all(trainSet),TrainFeatMat,3,balanceTrainSet); %arrange train
-[ValFeatMat,labelsVal] = arangeLables(labels_all(validSet),ValFeatMat,3,0); %arrange validation
+%[balancedMatTrain,labelsTrain,metaDataTrain] = arangeLabelsForFeatMat(metaData(trainSet,:),TrainFeatMat,3,balanceTrainSet); %arrange train
+%[ValFeatMat,labelsVal,metaDataTest] = arangeLabelsForFeatMat(metaData(validSet,:),ValFeatMat,3,0); %arrange validation
+%these 2 lines are instead the arrange. i put the tf arrange in row 
+labelsTrain= metaData(trainSet,4); balancedMatTrain= TrainFeatMat;
+labelsVal= metaData(validSet,4); ValFeatMat=ValFeatMat;
+%
 
 [selectMatTrain,featIdx,featOrder{k}] = selectFeat(balancedMatTrain,nFeatSelect,labelsTrain);
 selectMatVal= ValFeatMat(:,featIdx); %keeping in valSet only the N best features
